@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/OpenSlides/openslides-autoupdate-service/internal/restrict2/attribute"
 	"github.com/OpenSlides/openslides-autoupdate-service/pkg/datastore/dsfetch"
 )
 
@@ -36,119 +35,119 @@ func (o Option) MeetingID(ctx context.Context, ds *dsfetch.Fetch, id int) (int, 
 func (o Option) Modes(mode string) FieldRestricter {
 	switch mode {
 	case "A":
-		return o.see
+		return allways
 	case "B":
-		return o.modeB
+		return allways
 	}
 	return nil
 }
 
-// TODO: Group by poll
-func (o Option) see(ctx context.Context, fetcher *dsfetch.Fetch, optionIDs []int) ([]attribute.Func, error) {
-	pollIDs, err := fetchPollIDs(ctx, fetcher, optionIDs)
-	if err != nil {
-		return nil, fmt.Errorf("getting related poll ids: %w", err)
-	}
+// // TODO: Group by poll
+// func (o Option) see(ctx context.Context, fetcher *dsfetch.Fetch, optionIDs []int) ([]attribute.Func, error) {
+// 	pollIDs, err := fetchPollIDs(ctx, fetcher, optionIDs)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("getting related poll ids: %w", err)
+// 	}
 
-	return Collection(ctx, Poll{}).Modes("A")(ctx, fetcher, pollIDs)
-}
+// 	return Collection(ctx, Poll{}).Modes("A")(ctx, fetcher, pollIDs)
+// }
 
-// TODO: Group by poll
-func (o Option) modeB(ctx context.Context, fetcher *dsfetch.Fetch, optionIDs []int) ([]attribute.Func, error) {
-	pollIDList := make([]int, len(optionIDs))
-	for i, id := range optionIDs {
-		if id == 0 {
-			continue
-		}
+// // TODO: Group by poll
+// func (o Option) modeB(ctx context.Context, fetcher *dsfetch.Fetch, optionIDs []int) ([]attribute.Func, error) {
+// 	pollIDList := make([], len(optionIDs))
+// 	for i, id := range optionIDs {
+// 		if id == 0 {
+// 			continue
+// 		}
 
-		fetcher.Option_PollID(id).Lazy(&pollIDList[i])
-	}
+// 		fetcher.Option_PollID(id).Lazy(&pollIDList[i])
+// 	}
 
-	if err := fetcher.Execute(ctx); err != nil {
-		return nil, fmt.Errorf("fetching option data: %w", err)
-	}
+// 	if err := fetcher.Execute(ctx); err != nil {
+// 		return nil, fmt.Errorf("fetching option data: %w", err)
+// 	}
 
-	// pollIDList can contain the same pollID multiple times. I think it is
-	// still better not to group them. It would require more logic and an index.
-	// But we have a collection cache, so the gain should be minimal.
-	seePollAttr, err := Collection(ctx, Poll{}).Modes("A")(ctx, fetcher, pollIDList)
-	if err != nil {
-		return nil, fmt.Errorf("checking poll see: %w", err)
-	}
+// 	// pollIDList can contain the same pollID multiple times. I think it is
+// 	// still better not to group them. It would require more logic and an index.
+// 	// But we have a collection cache, so the gain should be minimal.
+// 	seePollAttr, err := Collection(ctx, Poll{}).Modes("A")(ctx, fetcher, pollIDList)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("checking poll see: %w", err)
+// 	}
 
-	managePollAttr, err := Collection(ctx, Poll{}).Modes("MANAGE")(ctx, fetcher, pollIDList)
-	if err != nil {
-		return nil, fmt.Errorf("checking poll manage: %w", err)
-	}
+// 	managePollAttr, err := Collection(ctx, Poll{}).Modes("MANAGE")(ctx, fetcher, pollIDList)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("checking poll manage: %w", err)
+// 	}
 
-	pollState := make([]string, len(optionIDs))
-	for i, id := range pollIDList {
-		if id == 0 {
-			continue
-		}
+// 	pollState := make([]string, len(optionIDs))
+// 	for i, id := range pollIDList {
+// 		if id == 0 {
+// 			continue
+// 		}
 
-		fetcher.Poll_State(id).Lazy(&pollState[i])
-	}
+// 		fetcher.Poll_State(id).Lazy(&pollState[i])
+// 	}
 
-	if err := fetcher.Execute(ctx); err != nil {
-		return nil, fmt.Errorf("fetching poll data: %w", err)
-	}
+// 	if err := fetcher.Execute(ctx); err != nil {
+// 		return nil, fmt.Errorf("fetching poll data: %w", err)
+// 	}
 
-	attrFuncs := make([]attribute.Func, len(optionIDs))
-	for i, id := range optionIDs {
-		if id == 0 {
-			continue
-		}
+// 	attrFuncs := make([]attribute.Func, len(optionIDs))
+// 	for i, id := range optionIDs {
+// 		if id == 0 {
+// 			continue
+// 		}
 
-		attrFuncs[i] = managePollAttr[i]
-		switch pollState[i] {
-		case "published":
-			attrFuncs[i] = seePollAttr[i]
-		default:
-			attrFuncs[i] = managePollAttr[i]
-		}
-	}
-	return attrFuncs, nil
-}
+// 		attrFuncs[i] = managePollAttr[i]
+// 		switch pollState[i] {
+// 		case "published":
+// 			attrFuncs[i] = seePollAttr[i]
+// 		default:
+// 			attrFuncs[i] = managePollAttr[i]
+// 		}
+// 	}
+// 	return attrFuncs, nil
+// }
 
-// fetchPollIDs returns the poll ids for a ist of optionIDs.
-func fetchPollIDs(ctx context.Context, fetcher *dsfetch.Fetch, optionIDs []int) ([]int, error) {
-	optionPollIDs := make([]int, len(optionIDs))
-	usedAsGlobal := make([]int, len(optionIDs))
-	for i, id := range optionIDs {
-		if id == 0 {
-			continue
-		}
+// // fetchPollIDs returns the poll ids for a ist of optionIDs.
+// func fetchPollIDs(ctx context.Context, fetcher *dsfetch.Fetch, optionIDs []int) ([]int, error) {
+// 	optionPollIDs := make([]int, len(optionIDs))
+// 	usedAsGlobal := make([]int, len(optionIDs))
+// 	for i, id := range optionIDs {
+// 		if id == 0 {
+// 			continue
+// 		}
 
-		fetcher.Option_PollID(id).Lazy(&optionPollIDs[i])
-		fetcher.Option_UsedAsGlobalOptionInPollID(id).Lazy(&usedAsGlobal[i])
-	}
+// 		fetcher.Option_PollID(id).Lazy(&optionPollIDs[i])
+// 		fetcher.Option_UsedAsGlobalOptionInPollID(id).Lazy(&usedAsGlobal[i])
+// 	}
 
-	if err := fetcher.Execute(ctx); err != nil {
-		return nil, fmt.Errorf("fetching option data: %w", err)
-	}
+// 	if err := fetcher.Execute(ctx); err != nil {
+// 		return nil, fmt.Errorf("fetching option data: %w", err)
+// 	}
 
-	pollIDs := make([]int, len(optionIDs))
-	for i, id := range optionIDs {
-		if id == 0 {
-			continue
-		}
+// 	pollIDs := make([]int, len(optionIDs))
+// 	for i, id := range optionIDs {
+// 		if id == 0 {
+// 			continue
+// 		}
 
-		if optionPollIDs[i] != 0 {
-			pollIDs[i] = optionPollIDs[i]
-			continue
-		}
+// 		if optionPollIDs[i] != 0 {
+// 			pollIDs[i] = optionPollIDs[i]
+// 			continue
+// 		}
 
-		if usedAsGlobal[i] != 0 {
-			pollIDs[i] = usedAsGlobal[i]
-			continue
-		}
+// 		if usedAsGlobal[i] != 0 {
+// 			pollIDs[i] = usedAsGlobal[i]
+// 			continue
+// 		}
 
-		return nil, fmt.Errorf(
-			"database seems corrupted. Both fields option/%d/poll_id and option/%d/used_as_global_option_in_poll_id are empty. One of the fields is required",
-			optionIDs[i],
-			optionIDs[i],
-		)
-	}
-	return pollIDs, nil
-}
+// 		return nil, fmt.Errorf(
+// 			"database seems corrupted. Both fields option/%d/poll_id and option/%d/used_as_global_option_in_poll_id are empty. One of the fields is required",
+// 			optionIDs[i],
+// 			optionIDs[i],
+// 		)
+// 	}
+// 	return pollIDs, nil
+// }

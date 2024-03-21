@@ -140,7 +140,7 @@ func leadMotionIndex(ctx context.Context, ds *dsfetch.Fetch, motionIDs []int) (m
 	index := make(map[int]int, len(motionIDs))
 
 	for len(motionIDs) > 0 {
-		leadMotionIDs := make([]int, len(motionIDs))
+		leadMotionIDs := make([]dsfetch.Maybe[int], len(motionIDs))
 		for i, id := range motionIDs {
 			if id == 0 {
 				continue
@@ -160,10 +160,10 @@ func leadMotionIndex(ctx context.Context, ds *dsfetch.Fetch, motionIDs []int) (m
 				continue
 			}
 
-			index[motionIDs[i]] = leadMotionIDs[i]
-
-			if leadMotionIDs[i] != 0 {
-				nextMotionIDs = append(nextMotionIDs, leadMotionIDs[i])
+			index[motionIDs[i]] = 0
+			if v, ok := leadMotionIDs[i].Value(); ok {
+				nextMotionIDs = append(nextMotionIDs, v)
+				index[motionIDs[i]] = v
 			}
 		}
 		motionIDs = nextMotionIDs

@@ -41,7 +41,7 @@ func (s Speaker) Modes(mode string) FieldRestricter {
 }
 
 func (s Speaker) see(ctx context.Context, fetcher *dsfetch.Fetch, speakerIDs []int) ([]attribute.Func, error) {
-	meetingUserID := make([]int, len(speakerIDs))
+	meetingUserID := make([]dsfetch.Maybe[int], len(speakerIDs))
 	meetingID := make([]int, len(speakerIDs))
 	for i, id := range speakerIDs {
 		if id == 0 {
@@ -56,8 +56,9 @@ func (s Speaker) see(ctx context.Context, fetcher *dsfetch.Fetch, speakerIDs []i
 	}
 
 	userID := make([]int, len(speakerIDs))
-	for i, id := range meetingUserID {
-		if id == 0 {
+	for i, maybeMeetingID := range meetingUserID {
+		id, ok := maybeMeetingID.Value()
+		if !ok {
 			continue
 		}
 		fetcher.MeetingUser_UserID(id).Lazy(&userID[i])

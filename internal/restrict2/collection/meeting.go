@@ -91,13 +91,13 @@ func (m Meeting) see(ctx context.Context, fetcher *dsfetch.Fetch, meetingIDs []i
 
 		committeeManager := attribute.FuncUserIDs(committeeManagerIDs)
 
-		_, isTemplateMeeting, err := fetcher.Meeting_TemplateForOrganizationID(id).Value(ctx)
+		isTemplateMeeting, err := fetcher.Meeting_TemplateForOrganizationID(id).Value(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("getting template meeting: %w", err)
 		}
 
 		templateMeeting := attribute.FuncNotAllowed
-		if isTemplateMeeting {
+		if !isTemplateMeeting.Null() {
 			templateMeeting = attribute.FuncIsCommitteeManager
 		}
 

@@ -15,7 +15,7 @@ func GroupByPerm(ctx context.Context, ds *dsfetch.Fetch, meetingID int) (map[TPe
 	var groupIDs []int
 	ds.Meeting_GroupIDs(meetingID).Lazy(&groupIDs)
 
-	var adminGroup int
+	var adminGroup dsfetch.Maybe[int]
 	ds.Meeting_AdminGroupID(meetingID).Lazy(&adminGroup)
 
 	if err := ds.Execute(ctx); err != nil {
@@ -44,9 +44,9 @@ func GroupByPerm(ctx context.Context, ds *dsfetch.Fetch, meetingID int) (map[TPe
 	// Map permission to group ids
 	permissionMap := make(map[TPermission][]int, len(derivatePerms))
 
-	if adminGroup > 0 {
+	if adminGroupID, ok := adminGroup.Value(); ok {
 		for perm := range derivatePerms {
-			permissionMap[perm] = []int{adminGroup}
+			permissionMap[perm] = []int{adminGroupID}
 		}
 	}
 
