@@ -9,6 +9,7 @@ package autoupdate
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"runtime"
 	"strconv"
 	"time"
@@ -114,6 +115,7 @@ func (a *Autoupdate) Connect(ctx context.Context, userID int, kb KeysBuilder) (D
 		uid:          userID,
 		kb:           kb,
 		skipWorkpool: skipWorkpool,
+		debugName:    rand.Intn(10_000),
 	}
 
 	return c.Next, nil
