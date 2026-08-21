@@ -105,6 +105,8 @@ func TestPollBallotUserModeA(t *testing.T) {
 			poll_id: 3
 			represented_meeting_user_id: 5
 			acting_meeting_user_id: 6
+			represented_user_id: 50
+			acting_user_id: 60
 		meeting_user/5/user_id: 50
 		meeting_user/6/user_id: 60
 		poll/3:
@@ -129,6 +131,8 @@ func TestPollBallotUserModeA(t *testing.T) {
 			poll_id: 3
 			represented_meeting_user_id: 5
 			acting_meeting_user_id: 5
+			represented_user_id: 50
+			acting_user_id: 60
 		meeting_user/5:
 			user_id: 50
 			vote_delegated_to_ids: [6]
@@ -155,6 +159,8 @@ func TestPollBallotUserModeA(t *testing.T) {
 			poll_id: 3
 			represented_meeting_user_id: 5
 			acting_meeting_user_id: 6
+			represented_user_id: 50
+			acting_user_id: 60
 		meeting_user/5:
 			user_id: 50
 			vote_delegated_to_ids: []
@@ -181,6 +187,8 @@ func TestPollBallotUserModeA(t *testing.T) {
 			poll_id: 3
 			represented_meeting_user_id: 5
 			acting_meeting_user_id: 5
+			represented_user_id: 50
+			acting_user_id: 60
 		meeting_user/5:
 			user_id: 50
 			vote_delegated_to_ids: [6]
